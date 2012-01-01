@@ -15,7 +15,13 @@ func rotator(start int) chan int {
 	// 010010
 	// 100001
 	ch := make(chan int)
+
+	// pow10(4) + pow10(3)
+	// pow10(5) + pow10(2)
+	// pow10(6) + pow10(1)
+	// etc
 	base := []int{1100, 10010, 100001}	
+
 	go func() {		
 		for i := 0; i < maxpal; i++ {
 			v := (i % 10) * base[0]
