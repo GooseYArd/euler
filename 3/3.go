@@ -51,52 +51,24 @@ func main() {
 	// What is the largest prime factor of the number 600851475143 ?
 	
 	N := int64(600851475143)
-// 	a := int64(math.Ceil(math.Sqrt(float64(N))))
-// 	b2 := int64(math.Pow(float64(a), 2)) - N
-	
-// 	for {
-// 		if ! is_square(b2) {
-// 			a += 1
-// 			b2 = int64(math.Pow(float64(a), 2)) - N
-// 		} else {
-// 			break
-// 		}		
-// 	}
-	
+	sqrtn := int64(math.Ceil(math.Sqrt(float64(N))))
+
 	primes := sieve()
 
 	var factors [2]int64
 
 	for i := 0; i < 5000; i++ {
 		next := <-primes
+		fmt.Printf("checking %v\n", next)
+		if int64(next) > int64(sqrtn) {
+			fmt.Println("giving up, last prime was greater than the sqrt of the target")
+			break
+		}
 		if N % int64(next) == 0 {			
 			fmt.Printf("%v is a prime factor\n", next)
 			factors[0] = factors[1]
 			factors[1] = int64(next)
-// 			fmt.Printf("testing other factor: %v\n", N / int64(next))
-// 			guess := N / int64(next)
-// 			terms := sieve()
-// 			prime := true
-// 			for j := 0; j < 10000; j++ { 
-// 				t := <- terms				
-// 				if guess % int64(t) == 0 {
-// 					fmt.Printf("whoops, %v is not prime\n", guess)
-// 					prime = false
-// 					break
-// 				}
-// 			}			
-// 			if prime {
-// 				fmt.Printf("I think %v is prime\n", guess)
-// 			}
-				
 		}
-	}
-	
-	newbig := factors[0] * factors[1]
-
-	if N % newbig == 0 {
-		fmt.Printf("also try %v\n", N / newbig)
-	}
-
+	}	
 	
 }
