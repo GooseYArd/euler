@@ -28,9 +28,10 @@ func main() {
 		fmt.Printf("square_of_sums: %v\n", square_of_sums)
 		fmt.Printf("difference: %v\n", square_of_sums - sum_of_squares)		
 
-		// these are from the #6 thread!
+		// these are from the #6 thread, hah!
 		fmt.Printf("square_of_sums by alternate method: %v\n", ((k+1) * (k/2)) * ((k+1) * (k/2)))
 		fmt.Printf("sum_of_squares by alternate method: %v\n", k * (k+1) * (2*k+1) * 1/6)
+
 	}
 }
  
