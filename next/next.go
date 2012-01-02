@@ -16,7 +16,7 @@ func fetch_description (num int) (n string, err error) {
 	
 	n = "ok"
 	
-	url := fmt.Sprintf("http://projecteuler.net/problem=5")
+	url := fmt.Sprintf("http://projecteuler.net/problem=%d", num)
 	resp,err := http.Get(url)
 	if err != nil {
 		fmt.Printf("Error fetching description: %v",err.Error())
@@ -28,6 +28,7 @@ func fetch_description (num int) (n string, err error) {
 	z := html.NewTokenizer(resp.Body)
 	
 	in_desc := false
+	desc_depth := 0
 	depth := 0
 	for {
 		tt := z.Next()
@@ -35,32 +36,29 @@ func fetch_description (num int) (n string, err error) {
 		case html.ErrorToken:
 			fmt.Printf("returning ErrorToken, captured %v", string(desc.Bytes()))
 			return string(desc.Bytes()), err
-			//return z.Err()
 		case html.TextToken:
 			if in_desc {
 				desc.Write(z.Text())
 			}
-		case html.StartTagToken, html.EndTagToken:
+		case html.StartTagToken, html.EndTagToken:			
 			tn, _ := z.TagName()
 			stn := string(tn)
+
 			if stn == "div" {
 				if tt == html.StartTagToken {
-					key, val, _ := z.TagAttr()
-					if string(key) == "class" && string(val) == "problem_content" {
-						in_desc = true
-					}
-				} else {
-					if in_desc {
-						return string(desc.Bytes()), err
-					}
-				}
-			}
-			
-			if len(tn) == 1 && tn[0] == 'a' {
-				if tt == html.StartTagToken {
 					depth++
+					key, val, _ := z.TagAttr()
+					if string(key) == "class" && string(val) == "problem_content" {						
+						in_desc = true
+						desc_depth = depth
+						fmt.Println("desc_depth is %v\n", desc_depth)
+					}
 				} else {
 					depth--
+					fmt.Printf("encountered a div end tag at depth %v\n", depth)
+					if in_desc && depth < desc_depth {
+						return string(desc.Bytes()), err
+					}
 				}
 			}
 		}
