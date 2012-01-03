@@ -51,11 +51,9 @@ func fetch_description (num int) (n string, err error) {
 					if string(key) == "class" && string(val) == "problem_content" {						
 						in_desc = true
 						desc_depth = depth
-						fmt.Println("desc_depth is %v\n", desc_depth)
 					}
 				} else {
 					depth--
-					fmt.Printf("encountered a div end tag at depth %v\n", depth)
 					if in_desc && depth < desc_depth {
 						return string(desc.Bytes()), err
 					}
