@@ -10,39 +10,27 @@ func is_square(n int64) bool {
 	return sq - math.Floor(sq) > 0		
 }
 
-func generate() chan int {
-	ch := make(chan int)
-	go func() {
-		for i := 2; ; i++ {
-			ch <- i
-		}
-	}()
-	return ch
-}
+func largest_prime_factor (comp int64) (lpf int64) {
+	
+	maxsqrt := int64(math.Sqrt(float64(comp)) + 1)
+	iscomp := make([]bool, maxsqrt, maxsqrt)
 
-func filter(in chan int, prime int) chan int {
-	out := make(chan int)
-	go func() {
-		for {
-			if i := <-in; i%prime != 0 {
-				out <- i
+	for m := int64(2); m < maxsqrt; m++ {
+		if ! iscomp[m] {			
+			for k := m * m; k <= maxsqrt; k+= m {
+				iscomp[k] = true
 			}
 		}
-	}()
-	return out
-}
-
-func sieve() chan int {
-	out := make(chan int)
-	go func() {
-		ch := generate()
-		for {
-			prime := <-ch
-			out <- prime
-			ch = filter(ch, prime)
+	}
+	
+	for m := maxsqrt - 1; m >= 2; m-- {
+		if ! iscomp[m] {
+			if comp % int64(m) == 0 {
+				return int64(m)
+			}
 		}
-	}()
-	return out
+	}	
+	return 1
 }
 
 func main() {
@@ -51,24 +39,7 @@ func main() {
 	// What is the largest prime factor of the number 600851475143 ?
 	
 	N := int64(600851475143)
-	sqrtn := int64(math.Ceil(math.Sqrt(float64(N))))
+	fmt.Printf("largest prime factor is %v\n", largest_prime_factor(N))
 
-	primes := sieve()
-
-	var factors [2]int64
-
-	for i := 0; i < 5000; i++ {
-		next := <-primes
-		fmt.Printf("checking %v\n", next)
-		if int64(next) > int64(sqrtn) {
-			fmt.Println("giving up, last prime was greater than the sqrt of the target")
-			break
-		}
-		if N % int64(next) == 0 {			
-			fmt.Printf("%v is a prime factor\n", next)
-			factors[0] = factors[1]
-			factors[1] = int64(next)
-		}
-	}	
 	
 }
