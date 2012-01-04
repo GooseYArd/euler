@@ -15,7 +15,7 @@ func main() {
 	// 
 	
 	for a := 1; a <= 998; a++ {
-		for b := 1; b <= 998; b++ {
+		for b := 1; b <= (998-a); b++ {
 			c := 1000 - (a + b)
 			if ((a*a) + (b*b) == (c*c)) {
 				fmt.Printf("Found it: a=%v b=%v c=%v\n", a, b, c)
