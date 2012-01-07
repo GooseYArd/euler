@@ -44,6 +44,8 @@ func main() {
 	// (4 * 6) + (5 * 6) + (5 * 6) 84
 	
 	// ( m + n ) ! / ( m! * n! )
+	
+	// http://mathforum.org/advanced/robertd/manhattan.html
 
 	for i := int64(1); i < 21; i++ {
 		fii := factorial(big.NewInt(i+i))
