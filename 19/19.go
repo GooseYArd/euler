@@ -1,7 +1,6 @@
 package main
 import (
 	"fmt"
-//	"math"
 )
 
 func isleap(year int) bool {
@@ -26,6 +25,22 @@ func dday_mon(year int, month int) int {
 	return ddays[month]
 }
 
+func century_anchor(year int) int {
+
+	var dayidx = map[string] int {
+		"sunday" : 0,
+		"monday":  1,
+		"tuesday": 2,
+		"wednesday": 3,
+		"thursday": 4,
+		"friday": 5,
+		"saturday": 6, 
+	}
+
+	c := (year / 100) + 1
+	return (((5 * c + ((c-1) / 4)) % 7) + dayidx["thursday"]) % 7
+}
+
 func main() {
 
 	// 
@@ -45,15 +60,15 @@ func main() {
 	// 
 	// 
 
-	days := []string{
-		"sunday", 
-		"monday", 
-		"tuesday", 
-		"wednesday", 
-		"thursday", 
-		"friday", 
-		"saturday",
-	}
+	// days := []string{
+	//  	"sunday", 
+	//  	"monday", 
+	//  	"tuesday", 
+	//  	"wednesday", 
+	//  	"thursday", 
+	//  	"friday", 
+	//  	"saturday",
+	// }
 	
 	months := []string{
 		"january",
@@ -69,20 +84,9 @@ func main() {
 		"november",
 		"december"}
 
-	var dayidx = map[string] int {
-		"sunday" : 0,
-		"monday":  1,
-		"tuesday": 2,
-		"wednesday": 3,
-		"thursday": 4,
-		"friday": 5,
-		"saturday": 6, 
-	}
-	
-	anchor := dayidx["wednesday"]
-	fmt.Printf("anchor for 20th century: %v\n", days[anchor])
-	
-	for i:= 1900; i < 1901; i++ {
+	sundays := 0
+	for i:= 1901; i <= 2000; i++ {
+		anchor := century_anchor(i)		
 		t := i % 100
 		if t % 2 == 1 {
 			t += 11
@@ -93,20 +97,23 @@ func main() {
 		}
 		t = 7 - (t % 7)
 		doomsday := (anchor + t) % 7
-		
-		fmt.Printf("doomsday for year %v is %v\n", i, days[doomsday])
-                   
-		for month := range months {
-			dday := dday_mon(i, month)
-			//fmt.Printf("%v/1/%v was a %v\n", month+1, i, days[(doomsday + offset) % 7])
-			//fmt.Printf("the %vth of %v is a %v\n", dday, months[month], days[doomsday])
-			fmt.Printf("the 1st of %v is a %v, %v\n",  months[month], ((doomsday % 7) + 1), dday)
-			//fmt.Printf("doomsday - offset: %v\n", doomsday - offset)
+		for month := range months {	
+			known_dday := dday_mon(i, month)
+			for ; known_dday > 7;  {
+				known_dday -= 7
+			}	
+			first := doomsday - (known_dday - 1)
+			if first == 0 {
+				sundays++
+			}
+			//if first < 0 {
+			//	first += 7
+			//}
+			//fmt.Printf("If the %v of %v is a %v then the 1st is a %v\n", known_dday, months[month], days[doomsday], days[first])
 		}
 	}
 	
-
-
+	fmt.Printf("%v sundays fell on the first of a month.\n", sundays)
 	
 }
 
