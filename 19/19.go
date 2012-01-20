@@ -4,6 +4,28 @@ import (
 //	"math"
 )
 
+func isleap(year int) bool {
+	if year % 4 == 0 {
+		if year % 100 == 0 {
+			if year % 400 == 0 {
+				return true
+			}
+			return false
+		}
+		return true
+	}
+	return false
+}
+
+func dday_mon(year int, month int) int {
+	ddays := []int{ 3, 28, 7, 4, 9, 6, 11, 8, 5, 10, 7, 12 }
+	if isleap(year) {
+		ddays[0]++
+		ddays[1]++
+	}
+	return ddays[month]
+}
+
 func main() {
 
 	// 
@@ -59,10 +81,8 @@ func main() {
 	
 	anchor := dayidx["wednesday"]
 	fmt.Printf("anchor for 20th century: %v\n", days[anchor])
-
-	offsets := []int{ 5, 2, 6, 3, 8, 5, 10, 7, 4, 9, 6, 11 }
 	
-	for i:= 1900; i < 2000; i++ {
+	for i:= 1900; i < 1901; i++ {
 		t := i % 100
 		if t % 2 == 1 {
 			t += 11
@@ -75,11 +95,18 @@ func main() {
 		doomsday := (anchor + t) % 7
 		
 		fmt.Printf("doomsday for year %v is %v\n", i, days[doomsday])
+                   
 		for month := range months {
-			fmt.Printf("%v/1/%v was a %v\n", month+1, i, days[(doomsday + offsets[month]) % 7])			
+			dday := dday_mon(i, month)
+			//fmt.Printf("%v/1/%v was a %v\n", month+1, i, days[(doomsday + offset) % 7])
+			//fmt.Printf("the %vth of %v is a %v\n", dday, months[month], days[doomsday])
+			fmt.Printf("the 1st of %v is a %v, %v\n",  months[month], ((doomsday % 7) + 1), dday)
+			//fmt.Printf("doomsday - offset: %v\n", doomsday - offset)
 		}
 	}
 	
+
+
 	
 }
 
