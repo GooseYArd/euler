@@ -23,15 +23,15 @@ func load_names(fn string) (names names_t, err error) {
 	reader := bufio.NewReader(file)
 
 	for {
-		if name, err = reader.ReadBytes(','); err != nil {
-			err = nil
-			break
-		}
+		name, err = reader.ReadBytes(',')
 		s := strings.Trim(string(name), "\",")		
 		names[s] = 0
 		for _,c := range(s) {
 			names[s] += int(c) - 64
-		}		
+		}
+		if err != nil {
+			break
+		}
 	}	
 	return names, err
 }
@@ -47,9 +47,9 @@ func main() {
 	// 
 	// 
 	
-	names, err := load_names("names.txt")
+	names, err := load_names("names.txt")	
 	if err != nil {
-		panic("couldn't load name list\n")
+	//	panic("couldn't load name list\n")
 	}
 
 	mk := make([]string, len(names))
@@ -59,12 +59,12 @@ func main() {
 		i++
 	}
 
-	sort.Strings(mk)
-	
+	sort.Strings(mk)	
 	sum := int64(0)
+
 	for i,v := range mk {
 		fmt.Printf("Pos: %v Name %v Val %v\n", i+1, v, names[v])
-		sum += int64(i+1 * names[v])
+		sum += int64((i+1) * names[v])
 	}
 	
 	fmt.Printf("Total: %v\n", sum)
