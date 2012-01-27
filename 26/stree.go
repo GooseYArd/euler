@@ -252,7 +252,7 @@ func (tree SuffixTree) follow_suffix_link(pos *Pos) {
 }
 
 
-func create_suffic_link(node *Node, link *Node) {
+func create_suffix_link(node *Node, link *Node) {
 	node.suffix_link = link
 }
 
@@ -303,5 +303,17 @@ func (tree SuffixTree) SEA(pos *Pos, str Path, after_rule_3 bool) (rule_applied 
 			apply_extension_rule_2(pos.node, str.begin+chars_found, str.end, path_pos, 0, new_son)
 			rule_applied = 2
 			if suffixless != 0 {
-				create_suffix_link
+				create_suffix_link(suffixless, pos.node)
+				suffixless = false
+			}
 		}
+	} else {
+		tmp = apply_extension_rule_2(
+			pos.node, 
+			str.begin+chars_found,
+			str.end,
+			path.pos,
+			pos.edge_pos,
+			split)
+		if suffixless == true
+		
