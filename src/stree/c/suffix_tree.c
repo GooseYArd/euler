@@ -861,10 +861,13 @@ void SPA(
    {
       str.begin       = *extension;
       str.end         = phase+1;
-      
+
+      printf("SPA: extension: %lu phase %lu\n", *extension, phase);
       /* Call Single-Extension-Algorithm */
       SEA(tree, pos, str, &rule_applied, *repeated_extension);
       
+      printf("SPA: rule_applied: %lu\n", rule_applied);
+
       /* Check if rule 3 was applied for the current extension */
       if(rule_applied == 3)
       {
@@ -945,14 +948,17 @@ SUFFIX_TREE* ST_CreateTree(const char* str, DBL_WORD length)
    phase = 2;
    
    /* Allocating first node, son of the root (phase 0), the longest path node */
+   printf("CreateTree: create first node.\n");
    tree->root->sons = create_node(tree->root, 1, tree->length, 1);
    suffixless       = 0;
    pos.node         = tree->root;
    pos.edge_pos     = 0;
 
+   printf("CreateTree: about to start SPA loop.\n");
    /* Ukkonen's algorithm begins here */
    for(; phase < tree->length; phase++)
    {
+      printf("SPA loop, phase %lu\n", phase);
       /* Perform Single Phase Algorithm */
       SPA(tree, &pos, phase, &extension, &repeated_extension);
    }
@@ -1025,6 +1031,11 @@ void ST_PrintNode(SUFFIX_TREE* tree, NODE* node1, long depth)
    long  d = depth , start = node1->edge_label_start , end;
    end     = get_node_label_end(tree, node1);
 
+   printf("PrintNode: node1.edgeLabelStart: %lu\n", start);
+   printf("PrintNode: depth: %lu\n", depth);
+
+   printf("The char at position %lu is %c\n", 0, tree->tree_string[0]);
+
    if(depth>0)
    {
       /* Print the branches coming from higher nodes */
@@ -1033,6 +1044,7 @@ void ST_PrintNode(SUFFIX_TREE* tree, NODE* node1, long depth)
          printf("|");
          d--;
       }
+
       printf("+");
       /* Print the node itself */
       while(start<=end)
@@ -1048,9 +1060,11 @@ void ST_PrintNode(SUFFIX_TREE* tree, NODE* node1, long depth)
    /* Recoursive call for all node1's sons */
    while(node2!=0)
    {
+      printf("in lower section\n");
       ST_PrintNode(tree,node2, depth+1);
       node2 = node2->right_sibling;
    }
+   printf("leaving PrintNode");
 }
 
 /******************************************************************************/
