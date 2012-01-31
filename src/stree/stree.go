@@ -3,7 +3,7 @@ package stree
 import (
 	"fmt"
 	"log"
-	"os"
+//	"os"
 )
 
 type RuleTwoType int
@@ -43,7 +43,6 @@ type Node struct {
 
 type SuffixTree struct {
 	e           int
-	//treeString []byte
 	treeString  string
 	length      int
 	root        *Node
@@ -120,6 +119,10 @@ func applyExtensionRule2(node *Node, edgeLabelBegin int, edgeLabelEnd int, pathP
 	var newInternal *Node
 	var son *Node
 
+	//DEBUG
+	fmt.Printf("rule 2: new leaf (%v,%v)\n", edgeLabelBegin, edgeLabelEnd)
+	//END
+
 	if _type == newSon {
 		newLeaf = createNode(node, edgeLabelBegin, edgeLabelEnd, pathPos)
 		son = node.sons
@@ -129,6 +132,8 @@ func applyExtensionRule2(node *Node, edgeLabelBegin int, edgeLabelEnd int, pathP
 		connectSiblings(son, newLeaf)
 		return newLeaf
 	}
+
+	fmt.Printf("rule 2: split(%v, %v)\n", edgeLabelBegin, edgeLabelEnd)
 
 	newInternal = createNode(node.father, node.edgeLabelStart, node.edgeLabelStart+edgePos, node.pathPosition)
 	node.edgeLabelStart += edgePos + 1
@@ -155,21 +160,16 @@ func (tree SuffixTree) traceSingleEdge(str Path, _type SkipType) (node *Node, ed
 	var length int
 	var strLen int
 
-	logger.Printf("in traceSingleEdge")
-
 	searchDone = true
 	edgePos = 0
 	
-	logger.Printf("about to findSon: str.begin %v", str.begin)
 	contNode = tree.findSon(node, tree.treeString[str.begin])
 	if contNode == nil {
-		logger.Printf("contNode was nil...")
 		edgePos = tree.getNodeLabelLength(node) - 1
 		charsFound = 0
 		return node, edgePos, charsFound, searchDone
 	}
 
-	logger.Printf("coneNode not nil, continuing...")
 	node = contNode
 	length = tree.getNodeLabelLength(node)
 	strLen = str.end - str.begin + 1
@@ -215,11 +215,8 @@ func (tree SuffixTree) traceString(str Path, _type SkipType) (node *Node, edgePo
 
 	searchDone := false
 	edgeCharsFound := 0
-	
-	logger.Println("in trace_tring...")
-	
+		
 	for searchDone == false {
-		logger.Printf("search done is false: str.begin %v charsFound %v", str.begin, charsFound)
 		node, edgePos, edgeCharsFound, searchDone = tree.traceSingleEdge(str, _type)
 		str.begin += edgeCharsFound
 		charsFound += edgeCharsFound
@@ -290,18 +287,24 @@ func (tree SuffixTree) SEA(pos *Pos, str Path, afterRule3 bool) (ruleApplied int
 	pathPos := str.begin
 	var tmp *Node
 
-	logger.Println("in SEA")
+	// DEBUG
+	tree.PrintTree()
+	if afterRule3 == false {
+		fmt.Printf("   followed from (%v,%v | %v) ", pos.node.edgeLabelStart, tree.getNodeLabelEnd(pos.node), pos.edgePos);
+	} else {
+		fmt.Printf("   starting at (%v,%v | %v) ", pos.node.edgeLabelStart, tree.getNodeLabelEnd(pos.node), pos.edgePos);
+	}
+	// END DEBUG
 
 	if afterRule3 == false {
-		logger.Println("after rule 3, following suffix link")
 		tree.followSuffixLink(pos)
 	}
 
 	if pos.node == tree.root {
-		logger.Println("pos.node == root, calling traceString")
+		fmt.Println("pos.node == root, calling traceString")
 		_, pos.edgePos, charsFound = tree.traceString(str, noSkip)
 	} else {
-		logger.Println("pos.node != root, calling traceString")
+		fmt.Println("pos.node != root, calling traceString")
 		str.begin = str.end
 		charsFound = 0
 
@@ -320,7 +323,7 @@ func (tree SuffixTree) SEA(pos *Pos, str Path, afterRule3 bool) (ruleApplied int
 		}
 	}
 
-	logger.Printf("charsFound: %v", charsFound)
+	fmt.Printf("charsFound: %v", charsFound)
 
 	if charsFound == str.end-str.begin+1 {
 		ruleApplied = 3
@@ -328,7 +331,7 @@ func (tree SuffixTree) SEA(pos *Pos, str Path, afterRule3 bool) (ruleApplied int
 			createSuffixLink(suffixless, pos.node.father)
 			suffixless = nil
 		}
-		logger.Println("returning inside block A")
+		fmt.Println("returning inside block A")
 		return
 	}
 
@@ -362,6 +365,8 @@ func (tree SuffixTree) SEA(pos *Pos, str Path, afterRule3 bool) (ruleApplied int
 		pos.node = tmp
 		ruleApplied = 2
 	}
+
+	fmt.Printf("rule 3 (%v,%v)\n", str.begin, str.end)
 	return ruleApplied
 }
 
@@ -377,17 +382,14 @@ func (tree SuffixTree) SPA(pos *Pos, phase int, extension int, repeatedExtension
 	var str Path
 	tree.e = phase + 1
 
-	logger.Println("in SPA")
+	fmt.Println("in SPA")
 
 	for extension <= phase+1 {
-		logger.Printf("extension: %v phase %v ", extension, phase)
 		str.begin = extension
 		str.end = phase + 1
 
-		logger.Println("calling SEA")
 		ruleApplied = tree.SEA(pos, str, repeatedExtension)
 
-		logger.Printf("ruleApplied was %v", ruleApplied)
 		if ruleApplied == 3 {
 			repeatedExtension = true
 			break
@@ -406,15 +408,16 @@ func CreateTree(str string) (tree *SuffixTree, err error) {
 
 	//length := len(str)
 
-	logf, err := os.Create("andy.log")
+	//logf, err := os.Create("andy.log")
 	if err != nil {
 		panic("couldn't open log file")
 	}
-	logger = log.New(logf, "", 1)
+
+	//fmt = log.New(logf, "", 1)
+	// fmt, _ = os.Create("andy.log")
 
 	ST_ERROR = len(str) + 10
 
-	logger.Println("creating tree byte array")
 	tree.treeString = str + "$"
 	tree.length = len(tree.treeString)
 
@@ -423,24 +426,19 @@ func CreateTree(str string) (tree *SuffixTree, err error) {
 
 	//tree.treeString[length] = '$'
 	
-	logger.Println("creating tree root")
 	tree.root = createNode(nil, 0, 0, 0)
 	tree.root.suffixLink = nil
 
-	logger.Println("setting phase to 2")
 	repeatedExtension := false
 	extension := 2
 	phase := 2
 
-	logger.Println("creating sons")
 	tree.root.sons = createNode(tree.root, 1, tree.length, 1)
 	suffixless = nil
 	pos.node = tree.root
 	pos.edgePos = 0
 
-	logger.Println("about to apply SPA")
 	for ; phase < tree.length; phase++ {
-		logger.Printf("SPA phase %v tree.lenth %v", phase, tree.length)
 		extension = tree.SPA(pos, phase, extension, repeatedExtension)
 	}
 
@@ -481,8 +479,10 @@ func (tree SuffixTree) PrintNode(node1 *Node, depth int) {
 		}
 		fmt.Printf("+")
 		for ; start <= end; start++ {
-			fmt.Printf("%v", tree.treeString[start])
+			fmt.Printf("%c", tree.treeString[start])
 		}
+		//DEBUG
+		fmt.Printf("  \t\t\t(%v,%v | %v)",node1.edgeLabelStart,end,node1.pathPosition);
 		fmt.Println()
 	}
 	for node2 != nil {
