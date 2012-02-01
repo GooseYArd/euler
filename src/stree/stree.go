@@ -116,11 +116,11 @@ func connectSiblings(leftSib *Node, rightSib *Node) {
 
 func applyExtensionRule2(node *Node, edgeLabelBegin int, edgeLabelEnd int, pathPos int, edgePos int, _type RuleTwoType) *Node {
 
-	//DEBUG
-	// fmt.Printf("rule 2: new leaf (%v,%v)\n", edgeLabelBegin, edgeLabelEnd)
-	//END
-
 	if _type == newSon {
+		//DEBUG
+		fmt.Printf("rule 2: new leaf (%v,%v)\n", edgeLabelBegin, edgeLabelEnd)
+		//END
+
 		newLeaf := createNode(node, edgeLabelBegin, edgeLabelEnd, pathPos)
 		son := node.sons
 		for son.rightSibling != nil {
@@ -284,12 +284,13 @@ func (tree *SuffixTree) SEA(pos *Pos, str Path, afterRule3 bool) (ruleApplied in
 	var tmp *Node
 
 	// DEBUG
-	// tree.PrintTree()
-// 	if afterRule3 == false {
-// 		fmt.Printf("   followed from (%v,%v | %v) ", pos.node.edgeLabelStart, tree.getNodeLabelEnd(pos.node), pos.edgePos);
-// 	} else {
-// 		fmt.Printf("   starting at (%v,%v | %v) ", pos.node.edgeLabelStart, tree.getNodeLabelEnd(pos.node), pos.edgePos);
-// 	}
+	tree.PrintTree()
+	fmt.Printf("extension: %v  phase+1: %v",str.begin, str.end);
+ 	if afterRule3 == false {
+ 		fmt.Printf("   followed from (%v,%v | %v) ", pos.node.edgeLabelStart, tree.getNodeLabelEnd(pos.node), pos.edgePos);
+ 	} else {
+ 		fmt.Printf("   starting at (%v,%v | %v) ", pos.node.edgeLabelStart, tree.getNodeLabelEnd(pos.node), pos.edgePos);
+ 	}
 	// END DEBUG
 
 	if afterRule3 == false {
@@ -451,23 +452,24 @@ func DeleteTree(tree *SuffixTree) {
 }
 
 func (tree *SuffixTree) PrintNode(node1 *Node, depth int) {
-
+	fmt.Printf("AT TOP, DEPTH IS %v\n", depth)
 	if depth > 0 {
 		for d:= depth; d > 1; d-- {
 			fmt.Printf("|")
 		}
 		fmt.Printf("+")		
 		end := tree.getNodeLabelEnd(node1)
-		for i := node1.edgeLabelStart; i < end; i++ {
+		for i := node1.edgeLabelStart; i <= end; i++ {
 			fmt.Printf("%c", tree.treeString[i])
 		}
 		//DEBUG
-		//fmt.Printf("  \t\t\t(%v,%v | %v)",node1.edgeLabelStart,end,node1.pathPosition);
+		fmt.Printf("  \t\t\t(%v,%v | %v)",node1.edgeLabelStart,end,node1.pathPosition);
 		fmt.Println()
 	}
-	
+	fmt.Printf("AT BOTTOM, DEPTH IS %v\n", depth)
 	for node2 := node1.sons; node2 != nil; node2 = node2.rightSibling {
-		tree.PrintNode(node2, depth+1)		
+		fmt.Printf("recurring (depth: %v)...\n", (depth+1));
+		tree.PrintNode(node2, depth+1)
 	}
 }
 
