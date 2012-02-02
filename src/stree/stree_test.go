@@ -6,7 +6,7 @@ import (
 )
 
 func TestCreateTree(t *testing.T) {	
-	tree, err := CreateTree("mmm")
+	tree, err := CreateTree("mississippi")
 	if err != nil {
 		t.Errorf("tree constructor returned non-nil")
 	}

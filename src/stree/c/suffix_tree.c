@@ -472,6 +472,7 @@ NODE* trace_single_edge(
 
          /* Compare current characters of the string and the edge. If equal - 
 	    continue */
+         printf("trace_single_edge: str.begin %lu edge_pos %lu\n", str.begin, *edge_pos);
          if(tree->tree_string[node->edge_label_start+*edge_pos] != tree->tree_string[str.begin+*edge_pos])
          {
             (*edge_pos)--;
