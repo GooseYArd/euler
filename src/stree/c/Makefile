@@ -1,6 +1,6 @@
 COMPILER = gcc
 DFLAGS = -ansi -pedantic -Wall -g
-CFLAGS = -c -DDEBUG
+CFLAGS = -c
 OFLAGS = -o
 EXECNAME = suffixtree
 

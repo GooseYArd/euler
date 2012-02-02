@@ -206,9 +206,11 @@ DBL_WORD get_node_label_end(SUFFIX_TREE* tree, NODE* node)
    /* If it's a leaf - return e */
    if(node->sons == 0)
      {
-       return tree->e;
+        printf("get_node_label_end: node->sons is null, returning tree.e\n");
+        return tree->e;
      }
    /* If it's not a leaf - return its real end */
+   printf("get_node_label_end: node->sons not null, returning node.edge_label_end\n");
    return node->edge_label_end;
 }
 
@@ -404,20 +406,28 @@ NODE* trace_single_edge(
 
    /* Search for the first character of the string in the outcoming edge of
       node */
+
+
    cont_node = find_son(tree, node, tree->tree_string[str.begin]);
    if(cont_node == 0)
    {
       /* Search is done, string not found */
       *edge_pos = get_node_label_length(tree,node)-1;
       *chars_found = 0;
-      printf("contNode is nil (str.begin: %lu)\n", str.begin);
+      printf("trace_single_edge: contNode is nil (str.begin: %lu)\n", str.begin);
       return node;
    }
-   printf("contNode is NOT nil (str.begin: %lu)\n", str.begin);
+   printf("trace_single_edge: contNode is NOT nil (str.begin: %lu)\n", str.begin);
    /* Found first character - prepare for continuing the search */
    node    = cont_node;
    length  = get_node_label_length(tree,node);
    str_len = str.end - str.begin + 1;
+
+   if (node->sons == 0) {
+      printf("trace_single_edge: node->sons is null\n");
+   }
+
+   printf("trace_single_edge: end %lu begin %lu\n", str.end, str.begin);
 
    /* Compare edge length and string length. */
    /* If edge is shorter then the string being searched and skipping is
@@ -447,8 +457,12 @@ NODE* trace_single_edge(
    {
       /* Find minimum out of edge length and string length, and scan it */
       if(str_len < length)
-         length = str_len;
+         {
+            printf("trace_single_edge: length adjusted\n");
+            length = str_len;
+         }
 
+      printf("trace_single_edge: str_len: %lu  length %lu\n", str_len, length);
       for(*edge_pos=1, *chars_found=1; *edge_pos<length; (*chars_found)++,(*edge_pos)++)
       {
 
@@ -520,6 +534,7 @@ NODE* trace_string(
 
    *chars_found = 0;
 
+   printf("trace_string: search_done: %d\n", search_done);
    while(search_done == 0)
    {
       *edge_pos        = 0;
@@ -721,14 +736,23 @@ void SEA(
 #endif
 #endif
 
+
+   printf("SEA: algorithm begins\n");
    /* If node is root - trace whole string starting from the root, else - trace last character only */
    if(pos->node == tree->root)
    {
+      printf("pos->node is root\n");
+      if (tree->root->sons == 0) {
+         printf("SEA: tree->root->sons is null\n");
+      } else {
+         printf("SEA: tree->root->sons is NOT null\n");
+      }
       pos->node = trace_string(tree, tree->root, str, &(pos->edge_pos), &chars_found, no_skip);
-      printf("set chars_found after trace_string to %d\n", chars_found);
+      printf("set chars_found after trace_string to %lu\n", chars_found);
    }
    else
    {
+      printf("SEA: is not root\n");
       str.begin = str.end;
       chars_found = 0;
 
@@ -736,10 +760,12 @@ void SEA(
          1. last character matched is the last of its edge */
       if(is_last_char_in_edge(tree,pos->node,pos->edge_pos))
       {
+         printf("SEA: is last char in edge\n");
          /* Trace only last symbol of str, search in the  NEXT edge (node) */
          tmp = find_son(tree, pos->node, tree->tree_string[str.end]);
          if(tmp != 0)
          {
+            printf("SEA: tmp not nil\n");
             pos->node      = tmp;
             pos->edge_pos   = 0;
             chars_found      = 1;
@@ -748,6 +774,7 @@ void SEA(
       /* 2. last character matched is NOT the last of its edge */
       else
       {
+         printf("SEA: not last char in edge\n");
          /* Trace only last symbol of str, search in the CURRENT edge (node) */
          if(tree->tree_string[pos->node->edge_label_start+pos->edge_pos+1] == tree->tree_string[str.end])
          {
@@ -757,16 +784,18 @@ void SEA(
       }
    }
 
-   printf("chars_found: %d\n", chars_found);
+   printf("SEA: chars_found: %lu\n", chars_found);
    /* If whole string was found - rule 3 applies */
    if(chars_found == str.end - str.begin + 1)
    {
+      printf("SEA: middle block\n");
       *rule_applied = 3;
       /* If there is an internal node that has no suffix link yet (only one may 
          exist) - create a suffix link from it to the father-node of the 
          current position in the tree (pos) */
       if(suffixless != 0)
       {
+         printf("SEA: suffixless is not nil..\n");
          create_suffix_link(suffixless, pos->node->father);
          /* Marks that no internal node with no suffix link exists */
          suffixless = 0;
@@ -775,6 +804,9 @@ void SEA(
       #ifdef DEBUG   
          printf("rule 3 (%lu,%lu)\n",str.begin,str.end);
       #endif
+         if (pos->node == tree->root) {
+            printf("SEA: at this point node == root\n");
+         }
 	 printf("SEA: Returning at A\n");
       return;
    }
@@ -871,6 +903,7 @@ void SPA(
       str.begin       = *extension;
       str.end         = phase+1;
 
+      printf("SPA calling SEA\n");
       /* Call Single-Extension-Algorithm */
       SEA(tree, pos, str, &rule_applied, *repeated_extension);
       printf("SPA: extension %lu rule_applied %lu repeated_extension %d\n", *extension, rule_applied, *repeated_extension);
@@ -964,6 +997,7 @@ SUFFIX_TREE* ST_CreateTree(const char* str, DBL_WORD length)
    for(; phase < tree->length; phase++)
    {
       /* Perform Single Phase Algorithm */
+      printf("phase %lu extension %lu\n", phase, extension);
       SPA(tree, &pos, phase, &extension, &repeated_extension);
    }
    return tree;

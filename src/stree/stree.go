@@ -71,9 +71,6 @@ func createNode(father *Node, start int, end int, position int) (node *Node) {
 }
 
 func (tree *SuffixTree) findSon(node *Node, character byte) *Node {
-	//if node == nil {
-	//	return nil
-	//}
 	node = node.sons
 	for node != nil && tree.treeString[node.edgeLabelStart] != character {
 		node = node.rightSibling
@@ -82,20 +79,15 @@ func (tree *SuffixTree) findSon(node *Node, character byte) *Node {
 }
 
 func (tree *SuffixTree) getNodeLabelEnd(node *Node) int {
-	//if node == nil {
-	//fmt.Printf("getNodeLabelEnd: node is nil\n");
-	//	return tree.e
-	//}
 	if node.sons == nil {
+		fmt.Printf("get_node_label_end: node.sons is nil, returning tree.e\n");
 		return tree.e
 	}
+	fmt.Printf("get_node_label_end: node.sons not nil, returning node.edgeLabelEnd\n");
 	return node.edgeLabelEnd
 }
 
 func (tree *SuffixTree) getNodeLabelLength(node *Node) int {
-	if node == nil {
-		return 1
-	}
 	return tree.getNodeLabelEnd(node) - node.edgeLabelStart + 1
 }
 
@@ -164,13 +156,21 @@ func (tree *SuffixTree) traceSingleEdge(node *Node, str Path, _type SkipType) (c
 	if contNode == nil {
 		edgePos = tree.getNodeLabelLength(node) - 1
 		charsFound = 0
-		fmt.Printf("contNode is nil (str.begin: %v)\n", str.begin);
+		fmt.Printf("traceSingleEdge: contNode is nil (str.begin: %v)\n", str.begin);
 		return node, edgePos, charsFound, searchDone
 	}
 
-	length = tree.getNodeLabelLength(contNode)
+	fmt.Printf("traceSingleEdge: contNode is NOT nil (str.begin: %v)\n", str.begin)
+	node = contNode
+	length = tree.getNodeLabelLength(node)
 	strLen = str.end - str.begin + 1
 
+	if node.sons == nil {
+		fmt.Println("traceSingleEdge: node.sons is nil")
+	}
+
+
+	fmt.Printf("trace_single_edge: end %v begin %v\n", str.end, str.begin)
 	if _type == skip {
 		if length <= strLen {
 			charsFound = length
@@ -182,20 +182,22 @@ func (tree *SuffixTree) traceSingleEdge(node *Node, str Path, _type SkipType) (c
 			charsFound = strLen
 			edgePos = strLen - 1
 		}
-		return contNode, edgePos, charsFound, searchDone
+		return node, edgePos, charsFound, searchDone
 	} else {
 		if strLen < length {
+			fmt.Printf("trace_single_edge: length adjusted\n")
 			length = strLen
 		}
 
+		fmt.Printf("trace_single_edge: strLen %v length %v\n", strLen, length)
 		edgePos = 1
 		charsFound = 1
 		for edgePos < length {
 			charsFound++
 			edgePos++
-			if tree.treeString[contNode.edgeLabelStart+edgePos] != tree.treeString[str.begin+edgePos] {
+			if tree.treeString[node.edgeLabelStart+edgePos] != tree.treeString[str.begin+edgePos] {
 				edgePos--
-				return contNode, edgePos, charsFound, searchDone
+				return node, edgePos, charsFound, searchDone
 			}
 		}
 	}
@@ -205,24 +207,23 @@ func (tree *SuffixTree) traceSingleEdge(node *Node, str Path, _type SkipType) (c
 		searchDone = false
 	}
 
-	return contNode, edgePos, charsFound, searchDone
+	return node, edgePos, charsFound, searchDone
 }
 
 func (tree *SuffixTree) traceString(node *Node, str Path, _type SkipType) (newnode *Node, edgePos int, charsFound int) {
 
 	searchDone := false
 	edgeCharsFound := 0
-	newnode = node
-	
+
+	fmt.Printf("traceString: searchDone: %v\n", searchDone)
 	for searchDone == false {
-		newnode, edgePos, edgeCharsFound, searchDone = tree.traceSingleEdge(newnode, str, _type)
-		fmt.Printf("edgeCharsFound: %v\n", edgeCharsFound);
+		node, edgePos, edgeCharsFound, searchDone = tree.traceSingleEdge(node, str, _type)
+		fmt.Printf("edge_chars_found: %v\n", edgeCharsFound)
 		str.begin += edgeCharsFound
 		charsFound += edgeCharsFound
 	}
 
-	fmt.Printf("traceString: charsFound %v\n", charsFound);
-	return newnode, edgePos, charsFound
+	return node, edgePos, charsFound
 
 }
 
@@ -301,21 +302,34 @@ func (tree *SuffixTree) SEA(pos *Pos, str Path, afterRule3 bool) (ruleApplied in
 		tree.followSuffixLink(pos)
 	}
 	
+	fmt.Printf("SEA: algorithm begins\n");
+
 	if pos.node == tree.root {
-		_, pos.edgePos, charsFound = tree.traceString(pos.node, str, noSkip)
-		fmt.Printf("set charsFound after traceString to %v\n", charsFound);
+		fmt.Printf("SEA: pos.node is root\n")
+		if tree.root.sons == nil {
+			fmt.Println("SEA: tree.root.sons is nil");
+		} else {
+			fmt.Println("SEA: tree.root.sons is NOT nil");
+		}
+		pos.node, pos.edgePos, charsFound = tree.traceString(tree.root, str, noSkip)
+		fmt.Printf("SEA: set charsFound after traceString to %v\n", charsFound);
+		
 	} else {
 		str.begin = str.end
 		charsFound = 0
+		fmt.Println("SEA: is not root");
 
 		if tree.isLastCharInEdge(pos.node, pos.edgePos) {
+			fmt.Println("SEA: is last char in edge");
 			tmp = tree.findSon(pos.node, tree.treeString[str.end])
 			if tmp != nil {
+				fmt.Printf("SEA: tmp not nil\n");
 				pos.node = tmp
 				pos.edgePos = 0
 				charsFound = 1
 			}
 		} else {
+			fmt.Printf("SEA: not last char in edge\n");
 			if tree.treeString[pos.node.edgeLabelStart+pos.edgePos+1] == tree.treeString[str.end] {
 				pos.edgePos++
 				charsFound = 1
@@ -323,14 +337,19 @@ func (tree *SuffixTree) SEA(pos *Pos, str Path, afterRule3 bool) (ruleApplied in
 		}
 	}
 
-	fmt.Printf("charsFound: %v\n", charsFound);
+	fmt.Printf("SEA: charsFound: %v\n", charsFound);
 	if charsFound == str.end-str.begin+1 {
+		fmt.Printf("SEA: middle block\n");
 		ruleApplied = 3
 		if suffixless != nil {
+			fmt.Printf("suffixless is not nil\n");
 			createSuffixLink(suffixless, pos.node.father)
 			suffixless = nil
 		}
 		fmt.Println("SEA: Returning at A")
+		if pos.node == tree.root {
+			fmt.Println("SEA: at this point node == root")
+		}
 		return ruleApplied
 	}
 
@@ -387,6 +406,7 @@ func (tree *SuffixTree) SPA(pos *Pos, phase int, extension int, repeatedExtensio
 		str.begin = extension
 		str.end = phase + 1
 
+		fmt.Printf("SPA calling SEA\n");
 		ruleApplied = tree.SEA(pos, str, repeatedExtension)		
 		fmt.Printf("SPA: extension %v ruleApplied: %v repeatedExtension: %v\n", extension, ruleApplied, repeatedExtension);
 		if ruleApplied == 3 {
@@ -402,7 +422,7 @@ func (tree *SuffixTree) SPA(pos *Pos, phase int, extension int, repeatedExtensio
 
 func CreateTree(str string) (tree *SuffixTree, err error) {
 
-	pos := new(Pos)
+	var pos Pos
 
 	tree = new(SuffixTree)
 
@@ -433,7 +453,7 @@ func CreateTree(str string) (tree *SuffixTree, err error) {
 	
 	for phase < tree.length {
 		fmt.Printf("phase %v extension %v\n", phase, extension)
-		extension, repeatedExtension = tree.SPA(pos, phase, extension, repeatedExtension)
+		extension, repeatedExtension = tree.SPA(&pos, phase, extension, repeatedExtension)
 		phase++
 	}
 
