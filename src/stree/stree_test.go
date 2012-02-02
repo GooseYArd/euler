@@ -7,7 +7,7 @@ import (
 
 func TestCreateTree(t *testing.T) {	
 	fmt.Println("creating tree")
-	tree, err := CreateTree("miss")
+	tree, err := CreateTree("mmm")
 	if err != nil {
 		t.Errorf("tree constructor returned non-nil")
 	}

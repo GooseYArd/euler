@@ -410,9 +410,10 @@ NODE* trace_single_edge(
       /* Search is done, string not found */
       *edge_pos = get_node_label_length(tree,node)-1;
       *chars_found = 0;
+      printf("contNode is nil (str.begin: %lu)\n", str.begin);
       return node;
    }
-   
+   printf("contNode is NOT nil (str.begin: %lu)\n", str.begin);
    /* Found first character - prepare for continuing the search */
    node    = cont_node;
    length  = get_node_label_length(tree,node);
@@ -524,6 +525,7 @@ NODE* trace_string(
       *edge_pos        = 0;
       edge_chars_found = 0;
       node = trace_single_edge(tree, node, str, edge_pos, &edge_chars_found, type, &search_done);
+      printf("edge_chars_found %lu\n", edge_chars_found);
       str.begin       += edge_chars_found;
       *chars_found    += edge_chars_found;
    }
@@ -723,6 +725,7 @@ void SEA(
    if(pos->node == tree->root)
    {
       pos->node = trace_string(tree, tree->root, str, &(pos->edge_pos), &chars_found, no_skip);
+      printf("set chars_found after trace_string to %d\n", chars_found);
    }
    else
    {
@@ -754,6 +757,7 @@ void SEA(
       }
    }
 
+   printf("chars_found: %d\n", chars_found);
    /* If whole string was found - rule 3 applies */
    if(chars_found == str.end - str.begin + 1)
    {
@@ -771,6 +775,7 @@ void SEA(
       #ifdef DEBUG   
          printf("rule 3 (%lu,%lu)\n",str.begin,str.end);
       #endif
+	 printf("SEA: Returning at A\n");
       return;
    }
    
@@ -785,6 +790,7 @@ void SEA(
             by apply_extension_rule_2 */
          apply_extension_rule_2(pos->node, str.begin+chars_found, str.end, path_pos, 0, new_son);
          *rule_applied = 2;
+	 printf("SEA: rule_applied set to 2 in block B\n");
          /* If there is an internal node that has no suffix link yet (only one 
             may exist) - create a suffix link from it to the father-node of the 
             current position in the tree (pos) */
@@ -817,6 +823,7 @@ void SEA(
       /* Prepare pos for the next extension */
       pos->node = tmp;
       *rule_applied = 2;
+      printf("SEA: rule_applied set to 2 in block C\n");
    }
 }
 
@@ -866,6 +873,7 @@ void SPA(
 
       /* Call Single-Extension-Algorithm */
       SEA(tree, pos, str, &rule_applied, *repeated_extension);
+      printf("SPA: extension %lu rule_applied %lu repeated_extension %d\n", *extension, rule_applied, *repeated_extension);
       
       /* Check if rule 3 was applied for the current extension */
       if(rule_applied == 3)
@@ -1048,6 +1056,7 @@ void ST_PrintNode(SUFFIX_TREE* tree, NODE* node1, long depth)
       #endif
       printf("\n");
    }
+
    /* Recoursive call for all node1's sons */
    while(node2!=0)
    {

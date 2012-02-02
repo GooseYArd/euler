@@ -7,7 +7,7 @@ int main()
 	DBL_WORD position;
 	
 	/*Create the suffix tree*/
-	SUFFIX_TREE* tree = ST_CreateTree("miss", 4);
+	SUFFIX_TREE* tree = ST_CreateTree("mmm", 3);
 	
 	/*Print the suffix tree.*/
 	ST_PrintTree(tree);
