@@ -30,14 +30,15 @@ const (
 )
 
 type Node struct {
-	sons             *Node
-	rightSibling    *Node
-	leftSibling     *Node
-	father           *Node
-	suffixLink      *Node
-	pathPosition    int
+	sons *Node
+	rightSibling *Node
+	leftSibling *Node
+	father *Node
+	suffixLink *Node
+	pathPosition int
 	edgeLabelStart int
-	edgeLabelEnd   int
+	edgeLabelEnd int
+	visited bool
 }
 
 type SuffixTree struct {
@@ -57,6 +58,8 @@ type Pos struct {
 	edgePos int
 }
 
+var maxDepth int
+var supMaxRep []string 
 var suffixless *Node
 var ST_ERROR int
 var logger *log.Logger
@@ -67,6 +70,7 @@ func createNode(father *Node, start int, end int, position int) (node *Node) {
 	node.pathPosition = position
 	node.edgeLabelStart = start
 	node.edgeLabelEnd = end
+	node.visited = false
 	return node
 }
 
@@ -360,6 +364,9 @@ func CreateTree(str string) (tree *SuffixTree, err error) {
 	var pos Pos
 	tree = new(SuffixTree)
 
+	supMaxRep = supMaxRep[0:0]
+	maxDepth = 0
+
 	ST_ERROR = len(str) + 10	
 	length := len(str)
 	
@@ -420,7 +427,7 @@ func (tree *SuffixTree) PrintNode(node1 *Node, depth int) {
 		for d:= depth; d > 1; d-- {
 			fmt.Printf("|")
 		}
-		fmt.Printf("+")		
+		fmt.Printf("+")
 		end := tree.getNodeLabelEnd(node1)
 		for i := node1.edgeLabelStart; i <= end; i++ {
 			fmt.Printf("%c", tree.treeString[i])
@@ -430,6 +437,25 @@ func (tree *SuffixTree) PrintNode(node1 *Node, depth int) {
 
 	for node2 := node1.sons; node2 != nil; node2 = node2.rightSibling {
 		tree.PrintNode(node2, depth+1)
+	}
+}
+
+func (tree *SuffixTree) visitNode(node1 *Node, depth int) {
+	foundNewDeepest := false
+	if depth > 0 {
+		if depth > maxDepth {
+			maxDepth = depth
+			foundNewDeepest = true
+		}
+		end := tree.getNodeLabelEnd(node1)
+		if foundNewDeepest {
+			newbig := string(tree.treeString[node1.edgeLabelStart : end + 1])			
+			supMaxRep = append(supMaxRep, newbig)
+		}
+	}
+	
+	for node2 := node1.sons; node2 != nil; node2 = node2.rightSibling {
+		tree.visitNode(node2, depth+1)
 	}
 }
 
@@ -447,7 +473,7 @@ func (tree *SuffixTree) PrintFullNode(node *Node) {
 
 	// TODO
 	for start <= end {
-		fmt.Printf("%v", tree.treeString[start])
+		fmt.Printf("%c", tree.treeString[start])
 		start++
 	}
 }
@@ -455,4 +481,12 @@ func (tree *SuffixTree) PrintFullNode(node *Node) {
 func (tree *SuffixTree) PrintTree() {
 	fmt.Printf("\nroot\n")
 	tree.PrintNode(tree.root, 0)
+
+	fmt.Printf("super maximal repeat, len %v: %v\n", maxDepth, supMaxRep[len(supMaxRep) - 2])
 }
+
+func (tree *SuffixTree) SuperMaximal() string {	
+	tree.visitNode(tree.root, 0)
+	return supMaxRep[len(supMaxRep) - 2]
+}
+

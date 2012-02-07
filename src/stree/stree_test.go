@@ -12,4 +12,5 @@ func TestCreateTree(t *testing.T) {
 	}
 	tree.PrintTree()
 	
+
 }

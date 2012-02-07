@@ -28,23 +28,27 @@ func main() {
 
 	// The period of 1/k for integer k is always ≤ k − 1.
 
-	for i := 987; i < 988; i++ {
+	longest := 0
+	var longseq string
+
+	for i := 3; i < 999; i++ {
+		var l string
 		divisor := i
 		dividend := 1
-
-		// l := make([]int, i*2)
-		var l string
-
 		for j:=0; j<(i*2); j++ {
 			quotient := dividend / divisor
 			dividend -= (quotient * divisor)
 			dividend *= 10
-			// l[j] = quotient
 			l += strconv.Itoa(quotient)
 		}
-
-		fmt.Printf("1/%v: %v\n", i, l)
+		
 		t, _ := stree.CreateTree(l)
-		t.PrintTree()
+		smax := t.SuperMaximal()
+		if len(smax) > longest {
+			longest = i
+			longseq = l
+			fmt.Printf("new longest: %v\n", i)
+		}
 	}
+	fmt.Printf("Longest: %v, %v\n", longest, longseq)
 }
