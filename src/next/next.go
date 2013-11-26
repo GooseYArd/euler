@@ -7,7 +7,7 @@ import (
 	"strconv"
 	"path/filepath"
 	"net/http"
-	"html"
+	"code.google.com/p/go.net/html"
 	"bytes"
 	"strings"
 )
