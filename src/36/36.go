@@ -2,37 +2,12 @@ package main
 
 import (
 	"fmt"
-	"math"
 )
 
-func rotator(start int) chan int {
-
-	// for a number with 6 digits there can be at most 10 ^ (log10(n) / 2) palindromes	
-	maxpal := int(math.Pow10(int(math.Log10(1000000) / 2)))
-
-	// 001100
-	// 010010
-	// 100001
-	ch := make(chan int)
-
-	// pow10(4) + pow10(3)
-	// pow10(5) + pow10(2)
-	// pow10(6) + pow10(1)
-	// etc
-	base := []int{1100, 10010, 100001}	
-
-	go func() {		
-		for i := 0; i < maxpal; i++ {
-			v := (i % 10) * base[0]
-			v += ((i % 100) / 10) * base[1]
-			v += ((i % 1000) / 100) * base[2]
-			ch <- start - v
-		}
-	}()
-	return ch
-}
-
 func reverse_bits(input uint32) uint32 {  
+	if input == 0 {
+		return 0
+	}
 	input = (input & 0x55555555) <<  1 | (input & 0xaaaaaaaa) >>  1
 	input = (input & 0x33333333) <<  2 | (input & 0xcccccccc) >>  2
 	input = (input & 0x0f0f0f0f) <<  4 | (input & 0xf0f0f0f0) >>  4
@@ -45,6 +20,17 @@ func reverse_bits(input uint32) uint32 {
 	return input;
 }
 
+func check(x uint32) bool{		
+	return (x & reverse_bits(x) == x)
+}
+
+func showifpal(x uint32) {
+	if check(x) {
+		fmt.Printf("%v\n", x)
+	}
+	return
+}
+
 func main() {
 
 	// 
@@ -55,18 +41,29 @@ func main() {
 	// 
 	// 
 	
-	N := 999999
-	fmt.Printf("Working backwards from %v\n", N)	
-	rot := rotator(N)	
-	for {
-		next := <-rot
-		if next < 1 {
-			break
+	for c := uint32(0); c < 1000; c++ {
+		number := c
+		upper := c
+		lower := uint32(0)
+		digit := uint8(0)
+		base := uint32(10)
+		power := uint32(1)
+		
+		for number > 0 {
+			upper = upper * base
+			digit = uint8(number % base)
+			lower = lower * base + uint32(digit)
+			number = number / base
+			power *= base
 		}
-		//fmt.Printf("next %v/%v\n", next, reverse_bits(uint32(next)));
-		if uint32(next) & reverse_bits(uint32(next)) == uint32(next) {
-			fmt.Printf("next %v\n", next);
-		}		
+		
+		showifpal(upper + lower)
+		last := upper * base + lower			
+		showifpal(last)
+		
+		for i := uint32(1); i < base; i++ {			
+			showifpal(last + i * power)
+		}
 	}
 }
  
